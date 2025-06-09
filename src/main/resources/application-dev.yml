@@ -1,0 +1,7 @@
+server:
+  port: 8080
+
+kakao:
+  rest:
+    api:
+      key: ${KAKAO_REST_API_KEY}
