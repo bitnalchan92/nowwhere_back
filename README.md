@@ -7,11 +7,15 @@
 
 ### ETC
 
-| 패키지명         | 용도 설명                                    |
-| ------------ | ---------------------------------------- |
-| `config`     | CORS, Swagger, WebMvc, Security 등 설정 클래스 |
-| `controller` | `@RestController`나 `@Controller`를 담는 위치  |
-| `service`    | 서비스 로직 (비즈니스 처리 담당)                      |
-| `repository` | JPA Repository 또는 외부 API 호출 등 데이터 관련 처리  |
-| `domain`     | DTO, Entity, Enum, VO 등 데이터 모델 클래스       |
-| `util`       | 공통적으로 쓰이는 유틸성 클래스 (날짜 변환, 공공데이터 파서 등)    |
+```
+src/main/java/com/nowwhere/nowwhere_back/
+│
+├── config         // 설정 관련 클래스 (WebClient 설정 등)
+├── controller     // API 요청 처리 (Controller)
+├── domain         // 핵심 도메인
+│   ├── dto        // 요청/응답 DTO
+│   └── model      // Entity 혹은 VO (없다면 생략 가능)
+├── repository     // DB 접근 관련
+├── service        // 서비스 계층 - 비즈니스 로직 (← 여기에 넣는 걸 추천!)
+├── util           // 공용 유틸 클래스
+```
