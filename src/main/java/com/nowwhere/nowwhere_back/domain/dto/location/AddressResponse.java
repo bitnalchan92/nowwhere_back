@@ -1,11 +1,11 @@
-package com.nowwhere.nowwhere_back.domain.dto.kakao;
+package com.nowwhere.nowwhere_back.domain.dto.location;
 
 import lombok.Getter;
 
 import java.util.List;
 
 @Getter
-public class KakaoAddressResponse {
+public class AddressResponse {
     private Meta meta; // 응답 관련 정보
     private List<Document> documents; // 응답 결과
 
