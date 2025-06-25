@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,4 +18,5 @@ public class NearBusStopDto {
     private double gpsX; // 정류소 좌표X (WGS84)
     private double gpsY; // 정류소 좌표Y (WGS84)
     private int dist; // 거리(m)
+    private List<BusRouteDto> routes;
 }

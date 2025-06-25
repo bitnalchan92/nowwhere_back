@@ -27,7 +27,7 @@ public class BusController {
         String lonStr = (String) session.getAttribute("lon");
 
         if (latStr == null || lonStr == null) {
-             throw new IllegalStateException("위치 정보가 세션에 없습니다.");
+            throw new IllegalStateException("위치 정보가 세션에 없습니다.");
         }
 
         List<NearBusStopDto> nearBusStopDto = busService.getNearBusStops(latStr, lonStr);

@@ -1,6 +1,8 @@
 package com.nowwhere.nowwhere_back.service;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.nowwhere.nowwhere_back.domain.dto.bus.BusRouteDto;
+import com.nowwhere.nowwhere_back.domain.dto.bus.BusRouteResponse;
 import com.nowwhere.nowwhere_back.domain.dto.bus.NearBusStopDto;
 import com.nowwhere.nowwhere_back.domain.dto.bus.NearBusStopResponse;
 import lombok.RequiredArgsConstructor;
@@ -50,19 +52,57 @@ public class BusService {
             }
 
             return response.getMsgBody().getItemList().stream()
-                    .map(busStop -> new NearBusStopDto(
-                            busStop.getStationId(),
-                            busStop.getStationNm(),
-                            busStop.getArsId(),
-                            Double.parseDouble(busStop.getPosX()),
-                            Double.parseDouble(busStop.getPosY()),
-                            Double.parseDouble(busStop.getGpsX()),
-                            Double.parseDouble(busStop.getGpsY()),
-                            Integer.parseInt(busStop.getDist())
-                    ))
+                    .filter(busStop -> !busStop.getArsId().equals("0")) // 미정차 정류소 제외!
+                    .map(busStop -> {
+                        List<BusRouteDto> routes = getBusRoutesByStation(busStop.getArsId());
+
+                        return new NearBusStopDto(
+                                busStop.getStationId(),
+                                busStop.getStationNm(),
+                                busStop.getArsId(),
+                                Double.parseDouble(busStop.getPosX()),
+                                Double.parseDouble(busStop.getPosY()),
+                                Double.parseDouble(busStop.getGpsX()),
+                                Double.parseDouble(busStop.getGpsY()),
+                                Integer.parseInt(busStop.getDist()),
+                                routes
+                        );
+                    })
                     .collect(Collectors.toList());
         } catch (Exception e) {
             log.error("공공데이터 버스 API 조회 실패 : {}", e.getMessage(), e);
+            return List.of();
+        }
+    }
+
+    private List<BusRouteDto> getBusRoutesByStation(String arsId) {
+        try {
+            String urlStr = "http://ws.bus.go.kr/api/rest/stationinfo/getRouteByStation" +
+                    "?serviceKey=" + dataGoApiKey +
+                    "&arsId=" + arsId +
+                    "&resultType=json";
+            URI uri = new URI(urlStr);
+            WebClient webClient = WebClient.builder().build();
+
+            BusRouteResponse response = webClient.get()
+                    .uri(uri)
+                    .retrieve()
+                    .bodyToMono(BusRouteResponse.class)
+                    .block();
+            System.out.println("=================================> response : " + response);
+
+            if (response == null || response.getMsgBody() == null || response.getMsgBody().getItemList() == null) {
+                log.warn("msgBody or itemList is null");
+                return List.of();
+            }
+
+            return response.getMsgBody().getItemList().stream()
+                    .map(busRoute -> new BusRouteDto(
+                            busRoute.getBusRouteNm()
+                    ))
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("공공데이터 버스노선 API 조회 실패 : {}", e.getMessage(), e);
             return List.of();
         }
     }
