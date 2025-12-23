@@ -41,12 +41,11 @@ mkdir -p /home/ubuntu/logs
 
 # 5. 애플리케이션 시작 (환경변수와 함께)
 echo "[5/5] 애플리케이션 시작..."
-nohup env \
-    KAKAO_REST_API_KEY="$KAKAO_REST_API_KEY" \
-    DATA_GO_API_KEY="$DATA_GO_API_KEY" \
-    ALLOWED_ORIGINS="$ALLOWED_ORIGINS" \
-    java -jar \
+nohup java -jar \
     -Dspring.profiles.active=prod \
+    -DKAKAO_REST_API_KEY="$KAKAO_REST_API_KEY" \
+    -DDATA_GO_API_KEY="$DATA_GO_API_KEY" \
+    -DALLOWED_ORIGINS="$ALLOWED_ORIGINS" \
     build/libs/nowwhere_back-0.0.1-SNAPSHOT.jar \
     > /home/ubuntu/logs/application.log 2>&1 &
 
