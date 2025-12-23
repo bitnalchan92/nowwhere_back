@@ -1,6 +1,8 @@
 # 🚀 Nowwhere Backend 배포 체크리스트
 
-이 가이드를 따라 순서대로 진행하면 **main 브랜치에 푸시할 때마다 자동으로 배포**됩니다.
+이 가이드를 따라 순서대로 진행하면 **main 브랜치에 푸시할 때마다 EC2에서 자동으로 배포**됩니다.
+
+**배포 방식**: EC2 내부에서 5분마다 GitHub를 체크하고 자동으로 Pull & 재배포 (안전하고 간단!)
 
 ---
 
@@ -17,7 +19,7 @@
   - 인스턴스 유형: `t3.micro`
   - 키 페어: 새로 생성 → `nowwhere-key.pem` 다운로드 ⚠️ **안전한 곳에 보관**
 - [ ] 보안 그룹 설정:
-  - SSH (22): 내 IP
+  - SSH (22): **내 IP** (본인 IP만 허용 - 안전!)
   - HTTP (80): 0.0.0.0/0
   - 사용자 지정 TCP (8080): 0.0.0.0/0
 - [ ] 인스턴스 시작
@@ -43,6 +45,9 @@ sudo apt update && sudo apt upgrade -y
 # Java 17 설치
 sudo apt install openjdk-17-jdk -y
 java -version
+
+# Git 설치
+sudo apt install git -y
 
 # 환경변수 설정
 sudo nano /etc/environment
@@ -71,6 +76,19 @@ source /etc/environment
 # 로그 디렉토리 생성
 mkdir -p /home/ubuntu/logs
 
+# 작업 디렉토리 생성
+mkdir -p /home/ubuntu/app
+cd /home/ubuntu/app
+
+# Git Clone
+git clone https://github.com/bitnalchan92/nowwhere_back.git
+cd nowwhere_back
+
+# 실행 권한 부여
+chmod +x gradlew
+chmod +x deploy.sh
+chmod +x auto-deploy.sh
+
 # 확인
 echo $KAKAO_REST_API_KEY
 ```
@@ -79,74 +97,222 @@ echo $KAKAO_REST_API_KEY
 
 ---
 
-### 3단계: GitHub Secrets 설정 (5분)
+### 3단계: 초기 배포 (10분)
 
-1. **GitHub 저장소 페이지 접속**
-   - https://github.com/bitnalchan92/nowwhere_back
-
-2. **Settings → Secrets and variables → Actions**
-
-3. **New repository secret 클릭하여 2개 추가:**
-
-**Secret 1: EC2_HOST**
-- Name: `EC2_HOST`
-- Value: `<EC2-Public-IP>` (예: 43.201.123.45)
-
-**Secret 2: EC2_SSH_KEY**
-- Name: `EC2_SSH_KEY`
-- Value: (로컬 터미널에서 실행)
-  ```bash
-  cat ~/Downloads/nowwhere-key.pem
-  ```
-  출력된 전체 내용 복사 (`-----BEGIN` ~ `-----END` 전부)
-
----
-
-### 4단계: GitHub Actions 워크플로우 푸시 (1분)
+**EC2에서 실행:**
 
 ```bash
-# 로컬 컴퓨터에서 실행
-cd /Users/chankim/github/nowwhere_back
+cd /home/ubuntu/app/nowwhere_back
 
-git add .github/workflows/deploy.yml
-git add DEPLOYMENT.md
-git add SETUP_GUIDE.md
-git commit -m "Add GitHub Actions CI/CD workflow for automatic deployment"
-git push origin main
+# 첫 배포 실행
+./deploy.sh
 ```
+
+배포 스크립트가 자동으로:
+1. Git pull
+2. Gradle 빌드
+3. 기존 프로세스 종료
+4. 새 애플리케이션 시작
+
+**로그 확인:**
+```bash
+# 애플리케이션 로그 확인
+tail -f /home/ubuntu/logs/application.log
+
+# Ctrl + C로 종료
+```
+
+✅ 로그에 "Started NowwhereBackApplication" 메시지가 보이면 성공!
 
 ---
 
-### 5단계: 배포 확인 (2분)
+### 4단계: API 테스트 (2분)
 
-1. **GitHub Actions 페이지에서 워크플로우 확인**
-   - https://github.com/bitnalchan92/nowwhere_back/actions
-   - 최근 실행된 워크플로우 클릭
-   - 모든 단계가 ✅ 녹색이면 성공!
+**로컬 터미널에서 실행:**
 
-2. **API 테스트**
-   ```bash
-   # 로컬 터미널에서 실행
-   curl "http://<EC2-Public-IP>:8080/api/location/addressInfo?latitude=37.5665&longitude=126.9780"
-   ```
+```bash
+# EC2 Public IP로 테스트 (본인 IP로 변경)
+curl "http://<EC2-Public-IP>:8080/api/location/addressInfo?latitude=37.5665&longitude=126.9780"
+```
 
-   응답 예시:
-   ```json
-   {
-     "address": "서울특별시 중구 세종대로 110",
-     "roadAddress": "서울특별시 중구 세종대로 110"
-   }
-   ```
+**응답 예시:**
+```json
+{
+  "address": "서울특별시 중구 세종대로 110",
+  "roadAddress": "서울특별시 중구 세종대로 110"
+}
+```
 
 ✅ JSON 응답이 나오면 배포 성공!
 
 ---
 
+### 5단계: 자동 배포 설정 (5분)
+
+**main 브랜치에 푸시할 때마다 자동 배포**되도록 Cron Job을 설정합니다.
+
+**EC2에서 실행:**
+
+```bash
+# Crontab 편집
+crontab -e
+
+# 처음 실행 시 에디터 선택 (nano 추천 - 1번 선택)
+```
+
+**아래 내용 추가:**
+```bash
+# Nowwhere Backend 자동 배포 (5분마다 GitHub 체크)
+*/5 * * * * /home/ubuntu/app/nowwhere_back/auto-deploy.sh
+```
+
+저장: `Ctrl + X` → `Y` → `Enter`
+
+**Cron Job 확인:**
+```bash
+# 등록된 cron job 확인
+crontab -l
+
+# 자동 배포 로그 확인 (5분 후)
+tail -f /home/ubuntu/logs/auto-deploy.log
+```
+
+---
+
+### 6단계: 자동 배포 테스트 (5분)
+
+**로컬 컴퓨터에서 실행:**
+
+```bash
+cd /Users/chankim/github/nowwhere_back
+
+# 테스트용 커밋 생성
+echo "# Auto Deploy Test" >> README.md
+git add README.md
+git commit -m "test: verify auto deployment"
+git push origin main
+```
+
+**5분 후 EC2에서 확인:**
+
+```bash
+ssh -i nowwhere-key.pem ubuntu@<EC2-Public-IP>
+
+# 자동 배포 로그 확인
+tail -20 /home/ubuntu/logs/auto-deploy.log
+```
+
+✅ "새로운 커밋 감지! 배포를 시작합니다" 메시지가 보이면 성공!
+
+---
+
 ## 🎉 완료!
 
-이제 **main 브랜치에 푸시할 때마다 자동으로 배포**됩니다.
+이제 **main 브랜치에 푸시하면 5분 이내에 자동으로 배포**됩니다!
 
-### 다음 작업: Frontend Vercel 배포
+### 작동 방식
+
+1. 코드를 `main` 브랜치에 push
+2. EC2의 Cron Job이 5분마다 GitHub 체크
+3. 변경사항 발견 시 자동으로:
+   - Git pull
+   - Gradle 빌드
+   - 기존 앱 종료
+   - 새 버전 시작
+
+---
+
+## 🔧 관리 명령어
+
+### 로그 확인
+
+```bash
+# 애플리케이션 로그
+tail -f /home/ubuntu/logs/application.log
+
+# 자동 배포 로그
+tail -f /home/ubuntu/logs/auto-deploy.log
+
+# 최근 배포 내역 확인
+tail -50 /home/ubuntu/logs/auto-deploy.log
+```
+
+### 수동 배포
+
+```bash
+cd /home/ubuntu/app/nowwhere_back
+./deploy.sh
+```
+
+### 애플리케이션 상태 확인
+
+```bash
+# 실행 중인 프로세스 확인
+pgrep -f "nowwhere_back.*jar"
+
+# 또는
+ps aux | grep nowwhere_back
+```
+
+### 애플리케이션 재시작
+
+```bash
+# 프로세스 종료
+pkill -f "nowwhere_back.*jar"
+
+# 수동 배포
+cd /home/ubuntu/app/nowwhere_back
+./deploy.sh
+```
+
+---
+
+## 🔧 트러블슈팅
+
+### 자동 배포가 안 되는 경우
+
+```bash
+# 1. Cron job 확인
+crontab -l
+
+# 2. 스크립트 실행 권한 확인
+ls -la /home/ubuntu/app/nowwhere_back/auto-deploy.sh
+
+# 3. 수동으로 스크립트 실행해보기
+cd /home/ubuntu/app/nowwhere_back
+./auto-deploy.sh
+
+# 4. Cron 로그 확인
+grep CRON /var/log/syslog | tail -20
+```
+
+### 환경변수가 적용 안 될 때
+
+```bash
+# EC2 재부팅
+sudo reboot
+
+# 다시 접속 후 확인
+ssh -i nowwhere-key.pem ubuntu@<EC2-Public-IP>
+echo $KAKAO_REST_API_KEY
+```
+
+### 8080 포트 접근 안 될 때
+
+```bash
+# 프로세스 확인
+pgrep -f "nowwhere_back.*jar"
+
+# 로그 확인
+tail -f /home/ubuntu/logs/application.log
+
+# EC2 보안 그룹 확인 (AWS Console)
+# 8080 포트가 0.0.0.0/0으로 열려있는지 확인
+```
+
+---
+
+## 다음 단계: Frontend Vercel 배포
 
 1. Frontend `.env` 파일 업데이트:
    ```bash
@@ -164,35 +330,14 @@ git push origin main
    ALLOWED_ORIGINS="https://your-app.vercel.app,http://localhost:3000"
    ```
 
+   적용:
+   ```bash
+   source /etc/environment
+
+   # 애플리케이션 재시작 필요
+   pkill -f "nowwhere_back.*jar"
+   cd /home/ubuntu/app/nowwhere_back
+   ./deploy.sh
+   ```
+
 3. Vercel 배포 진행
-
----
-
-## 🔧 트러블슈팅
-
-### GitHub Actions 실패 시
-
-```bash
-# EC2에서 로그 확인
-ssh -i nowwhere-key.pem ubuntu@<EC2-Public-IP>
-tail -f /home/ubuntu/logs/application.log
-```
-
-### 8080 포트 접근 안 될 때
-
-```bash
-# EC2 보안 그룹 확인
-# AWS Console → EC2 → 보안 그룹 → 인바운드 규칙 확인
-# 8080 포트가 0.0.0.0/0으로 열려있는지 확인
-```
-
-### 환경변수가 적용 안 될 때
-
-```bash
-# EC2 재부팅
-sudo reboot
-
-# 다시 접속 후 확인
-ssh -i nowwhere-key.pem ubuntu@<EC2-Public-IP>
-echo $KAKAO_REST_API_KEY
-```

@@ -12,62 +12,40 @@
 
 ---
 
-## 🤖 GitHub Actions CI/CD 자동 배포 설정
+## 🤖 자동 배포 설정
 
-이 프로젝트는 **main 브랜치에 push할 때마다 자동으로 EC2에 배포**됩니다.
+이 프로젝트는 **main 브랜치에 push할 때마다 EC2에서 자동으로 배포**됩니다.
 
-### CI/CD 워크플로우 동작 방식
+### 배포 방식: EC2 Cron Job (안전하고 간단!)
+
+GitHub Actions 대신 **EC2 내부에서 주기적으로 GitHub를 체크**하는 방식을 사용합니다.
+
+**장점**:
+- ✅ EC2 보안 그룹에서 SSH를 "내 IP"로만 제한 가능 (더 안전)
+- ✅ GitHub Secrets 설정 불필요
+- ✅ 설정이 간단하고 안정적
+
+### 작동 방식
 
 1. **main 브랜치에 코드 push**
-2. GitHub Actions가 자동 실행
-3. Gradle로 애플리케이션 빌드
-4. EC2에 SSH 접속하여 배포
-5. 기존 애플리케이션 종료
-6. 새 버전 시작
+2. **EC2의 Cron Job이 5분마다** GitHub 체크
+3. 변경사항 발견 시 자동으로:
+   - Git pull
+   - Gradle 빌드
+   - 기존 애플리케이션 종료
+   - 새 버전 시작
 
-### GitHub Secrets 설정 (필수)
+### 설정 방법
 
-GitHub 저장소에 다음 Secrets를 등록해야 합니다:
+자세한 설정 방법은 `SETUP_GUIDE.md`를 참고하세요.
 
-1. **GitHub 저장소 페이지 접속**
-   - Settings → Secrets and variables → Actions → New repository secret
-
-2. **필수 Secrets**
-
-   | Secret 이름 | 설명 | 예시 |
-   |------------|------|------|
-   | `EC2_HOST` | EC2 Public IP 또는 도메인 | `43.201.xxx.xxx` |
-   | `EC2_SSH_KEY` | EC2 접속용 Private Key (.pem 파일 내용) | `-----BEGIN RSA PRIVATE KEY-----...` |
-
-3. **EC2_SSH_KEY 설정 방법**
+**핵심 단계**:
+1. EC2에서 Git clone
+2. `auto-deploy.sh` 스크립트 실행 권한 부여
+3. Crontab에 다음 추가:
    ```bash
-   # 로컬에서 .pem 파일 내용 복사
-   cat nowwhere-key.pem
-
-   # 출력된 전체 내용을 GitHub Secret에 붙여넣기
-   # -----BEGIN RSA PRIVATE KEY----- 부터
-   # -----END RSA PRIVATE KEY----- 까지 전부 복사
+   */5 * * * * /home/ubuntu/app/nowwhere_back/auto-deploy.sh
    ```
-
-### 환경변수는 EC2에서 직접 설정
-
-API 키 등 환경변수는 GitHub Secrets가 아닌 **EC2 서버에 직접 설정**합니다:
-- `KAKAO_REST_API_KEY`
-- `DATA_GO_API_KEY`
-- `ALLOWED_ORIGINS`
-
-이는 Step 3에서 `/etc/environment` 파일을 통해 설정됩니다.
-
-### 배포 확인
-
-```bash
-# GitHub Actions 페이지에서 워크플로우 실행 상태 확인
-# https://github.com/your-username/nowwhere_back/actions
-
-# 배포 성공 시 EC2에서 확인
-ssh -i nowwhere-key.pem ubuntu@<EC2-Public-IP>
-tail -f /home/ubuntu/logs/application.log
-```
 
 ---
 
