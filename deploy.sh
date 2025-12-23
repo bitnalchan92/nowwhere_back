@@ -6,6 +6,18 @@ echo "========================================="
 echo "Nowwhere Backend 배포 시작"
 echo "========================================="
 
+# 0. 환경변수 로드
+ENV_FILE="/home/ubuntu/.env.production"
+if [ -f "$ENV_FILE" ]; then
+    echo "[0/5] 환경변수 로드..."
+    source "$ENV_FILE"
+    echo "✓ 환경변수 로드 완료"
+else
+    echo "❌ 환경변수 파일을 찾을 수 없습니다: $ENV_FILE"
+    echo "SETUP_GUIDE.md를 참고하여 환경변수를 설정하세요."
+    exit 1
+fi
+
 # 1. Git Pull
 echo "[1/5] 최신 코드 가져오기..."
 git pull origin main
@@ -27,7 +39,7 @@ fi
 echo "[4/5] 로그 디렉토리 생성..."
 mkdir -p /home/ubuntu/logs
 
-# 5. 애플리케이션 시작
+# 5. 애플리케이션 시작 (환경변수와 함께)
 echo "[5/5] 애플리케이션 시작..."
 nohup java -jar \
     -Dspring.profiles.active=prod \

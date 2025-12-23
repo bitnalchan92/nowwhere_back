@@ -116,19 +116,23 @@ cd nowwhere_back
 ### Step 3: 환경변수 설정
 
 ```bash
-# /etc/environment 파일 편집
-sudo nano /etc/environment
+# 환경변수 파일 생성
+nano /home/ubuntu/.env.production
 
 # 다음 내용 추가:
-KAKAO_REST_API_KEY="your_kakao_api_key"
-DATA_GO_API_KEY="your_datago_api_key"
-ALLOWED_ORIGINS="http://localhost:3000"
+export KAKAO_REST_API_KEY="your_kakao_api_key"
+export DATA_GO_API_KEY="your_datago_api_key"
+export ALLOWED_ORIGINS="http://localhost:3000"
 
 # ⚠️ 중요: Vercel 배포 후에는 Vercel URL을 추가해야 합니다:
-# ALLOWED_ORIGINS="https://your-app.vercel.app,http://localhost:3000"
+# export ALLOWED_ORIGINS="https://your-app.vercel.app,http://localhost:3000"
 
-# 적용
-source /etc/environment
+# 파일 권한 설정 (보안)
+chmod 600 /home/ubuntu/.env.production
+
+# 환경변수 테스트
+source /home/ubuntu/.env.production
+echo $KAKAO_REST_API_KEY
 ```
 
 ---

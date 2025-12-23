@@ -49,29 +49,38 @@ java -version
 # Git 설치
 sudo apt install git -y
 
-# 환경변수 설정
-sudo nano /etc/environment
+# 환경변수 파일 생성
+nano /home/ubuntu/.env.production
 ```
 
 **아래 내용 추가 (본인의 실제 키로 변경):**
 ```bash
-KAKAO_REST_API_KEY="실제_카카오_API_키"
-DATA_GO_API_KEY="실제_공공데이터_API_키"
-ALLOWED_ORIGINS="http://localhost:3000"
+# Production 환경변수
+export KAKAO_REST_API_KEY="실제_카카오_API_키"
+export DATA_GO_API_KEY="실제_공공데이터_API_키"
+export ALLOWED_ORIGINS="http://localhost:3000"
 ```
 
 ⚠️ **참고**: `ALLOWED_ORIGINS`는 초기에는 `http://localhost:3000`으로 설정합니다.
 Frontend Vercel 배포 후, Vercel URL을 추가해야 합니다:
 ```bash
-# Vercel 배포 후 다시 수정 필요
-ALLOWED_ORIGINS="https://your-app.vercel.app,http://localhost:3000"
+export ALLOWED_ORIGINS="https://your-app.vercel.app,http://localhost:3000"
 ```
 
 저장: `Ctrl + X` → `Y` → `Enter`
 
 ```bash
-# 환경변수 적용
-source /etc/environment
+# 환경변수 파일 권한 설정 (보안)
+chmod 600 /home/ubuntu/.env.production
+
+# 환경변수 테스트
+source /home/ubuntu/.env.production
+echo $KAKAO_REST_API_KEY
+```
+
+✅ API 키가 출력되면 성공!
+
+```bash
 
 # 로그 디렉토리 생성
 mkdir -p /home/ubuntu/logs
@@ -88,12 +97,7 @@ cd nowwhere_back
 chmod +x gradlew
 chmod +x deploy.sh
 chmod +x auto-deploy.sh
-
-# 확인
-echo $KAKAO_REST_API_KEY
 ```
-
-✅ API 키가 출력되면 성공!
 
 ---
 
@@ -322,19 +326,17 @@ tail -f /home/ubuntu/logs/application.log
 2. EC2 환경변수 업데이트 (CORS):
    ```bash
    ssh -i nowwhere-key.pem ubuntu@<EC2-Public-IP>
-   sudo nano /etc/environment
+   nano /home/ubuntu/.env.production
    ```
 
    `ALLOWED_ORIGINS`에 Vercel 도메인 추가:
    ```bash
-   ALLOWED_ORIGINS="https://your-app.vercel.app,http://localhost:3000"
+   export ALLOWED_ORIGINS="https://your-app.vercel.app,http://localhost:3000"
    ```
 
-   적용:
+   저장 후 애플리케이션 재시작:
    ```bash
-   source /etc/environment
-
-   # 애플리케이션 재시작 필요
+   # 애플리케이션 재시작
    pkill -f "nowwhere_back.*jar"
    cd /home/ubuntu/app/nowwhere_back
    ./deploy.sh
