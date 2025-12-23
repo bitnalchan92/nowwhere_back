@@ -113,26 +113,33 @@ cd nowwhere_back
 
 ---
 
-### Step 3: 환경변수 설정
+### Step 3: 설정 파일 생성
 
 ```bash
-# 환경변수 파일 생성
-nano /home/ubuntu/.env.production
+# 설정 디렉토리 생성
+mkdir -p /home/ubuntu/config
+
+# Spring Boot 설정 파일 생성
+nano /home/ubuntu/config/application-prod.properties
 
 # 다음 내용 추가:
-export KAKAO_REST_API_KEY="your_kakao_api_key"
-export DATA_GO_API_KEY="your_datago_api_key"
-export ALLOWED_ORIGINS="http://localhost:3000"
+api.key.kakao=your_kakao_api_key
+api.key.datago=your_datago_api_key
+cors.allowed-origins=http://localhost:3000
+logging.level.root=INFO
+logging.level.com.nowwhere.nowwhere_back=INFO
+logging.file.name=/home/ubuntu/logs/nowwhere-back.log
+logging.file.max-size=10MB
+logging.file.max-history=30
 
 # ⚠️ 중요: Vercel 배포 후에는 Vercel URL을 추가해야 합니다:
-# export ALLOWED_ORIGINS="https://your-app.vercel.app,http://localhost:3000"
+# cors.allowed-origins=https://your-app.vercel.app,http://localhost:3000
 
 # 파일 권한 설정 (보안)
-chmod 600 /home/ubuntu/.env.production
+chmod 600 /home/ubuntu/config/application-prod.properties
 
-# 환경변수 테스트
-source /home/ubuntu/.env.production
-echo $KAKAO_REST_API_KEY
+# 설정 파일 확인
+cat /home/ubuntu/config/application-prod.properties
 ```
 
 ---

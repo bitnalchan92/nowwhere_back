@@ -1,0 +1,16 @@
+# Spring Boot Production 설정 파일
+# EC2에서 /home/ubuntu/config/application-prod.properties 경로에 복사하여 사용
+
+# API Keys
+api.key.kakao=your_kakao_api_key_here
+api.key.datago=your_datago_api_key_here
+
+# CORS
+cors.allowed-origins=http://localhost:3000
+
+# Logging
+logging.level.root=INFO
+logging.level.com.nowwhere.nowwhere_back=INFO
+logging.file.name=/home/ubuntu/logs/nowwhere-back.log
+logging.file.max-size=10MB
+logging.file.max-history=30

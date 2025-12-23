@@ -6,18 +6,16 @@
 LOG_FILE="/home/ubuntu/logs/auto-deploy.log"
 APP_DIR="/home/ubuntu/app/nowwhere_back"
 JAR_FILE="$APP_DIR/build/libs/nowwhere_back-0.0.1-SNAPSHOT.jar"
-ENV_FILE="/home/ubuntu/.env.production"
+CONFIG_FILE="/home/ubuntu/config/application-prod.properties"
 
 # 로그 함수
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
 }
 
-# 환경변수 로드
-if [ -f "$ENV_FILE" ]; then
-    source "$ENV_FILE"
-else
-    log "❌ 환경변수 파일을 찾을 수 없습니다: $ENV_FILE"
+# 설정 파일 확인
+if [ ! -f "$CONFIG_FILE" ]; then
+    log "❌ 설정 파일을 찾을 수 없습니다: $CONFIG_FILE"
     exit 1
 fi
 
@@ -79,9 +77,7 @@ mkdir -p /home/ubuntu/logs
 log "[5/5] 애플리케이션 시작..."
 nohup java -jar \
     -Dspring.profiles.active=prod \
-    -DKAKAO_REST_API_KEY="$KAKAO_REST_API_KEY" \
-    -DDATA_GO_API_KEY="$DATA_GO_API_KEY" \
-    -DALLOWED_ORIGINS="$ALLOWED_ORIGINS" \
+    --spring.config.additional-location=/home/ubuntu/config/ \
     "$JAR_FILE" \
     > /home/ubuntu/logs/application.log 2>&1 &
 

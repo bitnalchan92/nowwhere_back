@@ -49,36 +49,47 @@ java -version
 # Git 설치
 sudo apt install git -y
 
-# 환경변수 파일 생성
-nano /home/ubuntu/.env.production
+# 설정 디렉토리 생성
+mkdir -p /home/ubuntu/config
+
+# Spring Boot 설정 파일 생성
+nano /home/ubuntu/config/application-prod.properties
 ```
 
 **아래 내용 추가 (본인의 실제 키로 변경):**
-```bash
-# Production 환경변수
-export KAKAO_REST_API_KEY="실제_카카오_API_키"
-export DATA_GO_API_KEY="실제_공공데이터_API_키"
-export ALLOWED_ORIGINS="http://localhost:3000"
+```properties
+# API Keys
+api.key.kakao=실제_카카오_API_키
+api.key.datago=실제_공공데이터_API_키
+
+# CORS
+cors.allowed-origins=http://localhost:3000
+
+# Logging
+logging.level.root=INFO
+logging.level.com.nowwhere.nowwhere_back=INFO
+logging.file.name=/home/ubuntu/logs/nowwhere-back.log
+logging.file.max-size=10MB
+logging.file.max-history=30
 ```
 
-⚠️ **참고**: `ALLOWED_ORIGINS`는 초기에는 `http://localhost:3000`으로 설정합니다.
+⚠️ **참고**: `cors.allowed-origins`는 초기에는 `http://localhost:3000`으로 설정합니다.
 Frontend Vercel 배포 후, Vercel URL을 추가해야 합니다:
-```bash
-export ALLOWED_ORIGINS="https://your-app.vercel.app,http://localhost:3000"
+```properties
+cors.allowed-origins=https://your-app.vercel.app,http://localhost:3000
 ```
 
 저장: `Ctrl + X` → `Y` → `Enter`
 
 ```bash
-# 환경변수 파일 권한 설정 (보안)
-chmod 600 /home/ubuntu/.env.production
+# 설정 파일 권한 설정 (보안)
+chmod 600 /home/ubuntu/config/application-prod.properties
 
-# 환경변수 테스트
-source /home/ubuntu/.env.production
-echo $KAKAO_REST_API_KEY
+# 설정 파일 확인
+cat /home/ubuntu/config/application-prod.properties
 ```
 
-✅ API 키가 출력되면 성공!
+✅ API 키가 보이면 성공!
 
 ```bash
 
@@ -323,15 +334,15 @@ tail -f /home/ubuntu/logs/application.log
    NEXT_PUBLIC_SERVER_HOST=http://<EC2-Public-IP>:8080
    ```
 
-2. EC2 환경변수 업데이트 (CORS):
+2. EC2 설정 파일 업데이트 (CORS):
    ```bash
    ssh -i nowwhere-key.pem ubuntu@<EC2-Public-IP>
-   nano /home/ubuntu/.env.production
+   nano /home/ubuntu/config/application-prod.properties
    ```
 
-   `ALLOWED_ORIGINS`에 Vercel 도메인 추가:
-   ```bash
-   export ALLOWED_ORIGINS="https://your-app.vercel.app,http://localhost:3000"
+   `cors.allowed-origins`에 Vercel 도메인 추가:
+   ```properties
+   cors.allowed-origins=https://your-app.vercel.app,http://localhost:3000
    ```
 
    저장 후 애플리케이션 재시작:
