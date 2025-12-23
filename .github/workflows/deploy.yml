@@ -28,7 +28,7 @@ jobs:
       - name: Create deployment package
         run: |
           mkdir -p deploy
-          cp build/libs/*.jar deploy/application.jar
+          cp build/libs/*-SNAPSHOT.jar deploy/application.jar
           cp deploy.sh deploy/
           cd deploy
           tar -czf deploy.tar.gz *

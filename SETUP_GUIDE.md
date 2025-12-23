@@ -55,6 +55,13 @@ DATA_GO_API_KEY="실제_공공데이터_API_키"
 ALLOWED_ORIGINS="http://localhost:3000"
 ```
 
+⚠️ **참고**: `ALLOWED_ORIGINS`는 초기에는 `http://localhost:3000`으로 설정합니다.
+Frontend Vercel 배포 후, Vercel URL을 추가해야 합니다:
+```bash
+# Vercel 배포 후 다시 수정 필요
+ALLOWED_ORIGINS="https://your-app.vercel.app,http://localhost:3000"
+```
+
 저장: `Ctrl + X` → `Y` → `Enter`
 
 ```bash
