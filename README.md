@@ -18,4 +18,4 @@ src/main/java/com/nowwhere/nowwhere_back/
 ├── repository     // DB 접근 관련
 ├── service        // 서비스 계층 - 비즈니스 로직 (← 여기에 넣는 걸 추천!)
 ├── util           // 공용 유틸 클래스
-```
+```# Auto Deploy Test
