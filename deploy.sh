@@ -13,18 +13,18 @@ if [ ! -f "$CONFIG_FILE" ]; then
     echo "SETUP_GUIDE.md를 참고하여 설정 파일을 생성하세요."
     exit 1
 fi
-echo "[0/5] 설정 파일 확인 완료"
+echo "[ 0 / 5 ] 설정 파일 확인 완료"
 
 # 1. Git Pull
-echo "[1/5] 최신 코드 가져오기..."
+echo "[ 1 / 5 ] 최신 코드 가져오기..."
 git pull origin main
 
 # 2. Gradle Build
-echo "[2/5] 애플리케이션 빌드..."
+echo "[ 2 / 5 ] 애플리케이션 빌드..."
 ./gradlew clean build -x test
 
 # 3. 기존 프로세스 종료
-echo "[3/5] 기존 프로세스 종료..."
+echo "[ 3 / 5 ] 기존 프로세스 종료..."
 PID=$(pgrep -f "nowwhere_back.*jar")
 if [ -n "$PID" ]; then
     echo "기존 프로세스 종료: PID $PID"
@@ -33,11 +33,11 @@ if [ -n "$PID" ]; then
 fi
 
 # 4. 로그 디렉토리 생성
-echo "[4/5] 로그 디렉토리 생성..."
+echo "[ 4 / 5 ] 로그 디렉토리 생성..."
 mkdir -p /home/ubuntu/logs
 
 # 5. 애플리케이션 시작
-echo "[5/5] 애플리케이션 시작..."
+echo "[ 5 / 5 ] 애플리케이션 시작..."
 nohup java \
     -Dspring.profiles.active=prod \
     -Dspring.config.additional-location=/home/ubuntu/config/ \

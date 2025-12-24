@@ -15,7 +15,7 @@ log() {
 
 # 설정 파일 확인
 if [ ! -f "$CONFIG_FILE" ]; then
-    log "❌ 설정 파일을 찾을 수 없습니다: $CONFIG_FILE"
+    log "❌ 설정 파일을 찾을 수 없습니다 :: $CONFIG_FILE"
     exit 1
 fi
 
