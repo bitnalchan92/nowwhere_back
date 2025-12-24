@@ -38,10 +38,10 @@ mkdir -p /home/ubuntu/logs
 
 # 5. 애플리케이션 시작
 echo "[5/5] 애플리케이션 시작..."
-nohup java -jar \
+nohup java \
     -Dspring.profiles.active=prod \
-    --spring.config.additional-location=/home/ubuntu/config/ \
-    build/libs/nowwhere_back-0.0.1-SNAPSHOT.jar \
+    -Dspring.config.additional-location=/home/ubuntu/config/ \
+    -jar build/libs/nowwhere_back-0.0.1-SNAPSHOT.jar \
     > /home/ubuntu/logs/application.log 2>&1 &
 
 # 프로세스 확인
