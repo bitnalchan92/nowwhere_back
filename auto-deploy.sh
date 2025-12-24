@@ -75,10 +75,10 @@ mkdir -p /home/ubuntu/logs
 
 # 5. 애플리케이션 시작
 log "[5/5] 애플리케이션 시작..."
-nohup java -jar \
+nohup java \
     -Dspring.profiles.active=prod \
-    --spring.config.additional-location=/home/ubuntu/config/ \
-    "$JAR_FILE" \
+    -Dspring.config.additional-location=/home/ubuntu/config/ \
+    -jar "$JAR_FILE" \
     > /home/ubuntu/logs/application.log 2>&1 &
 
 # 프로세스 확인
