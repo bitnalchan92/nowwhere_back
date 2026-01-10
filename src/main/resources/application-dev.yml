@@ -5,3 +5,4 @@ api:
   key:
     kakao: ${KAKAO_REST_API_KEY}
     datago: ${DATA_GO_API_KEY}
+    seoul-subway: ${SEOUL_SUBWAY_API_KEY}

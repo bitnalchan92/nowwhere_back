@@ -9,6 +9,7 @@
 ### 2. API 키 준비
 - Kakao REST API Key
 - 공공데이터포털 API Key
+- 서울실시간지하철인증키 API Key
 
 ---
 
@@ -125,7 +126,8 @@ nano /home/ubuntu/config/application-prod.properties
 # 다음 내용 추가:
 api.key.kakao=your_kakao_api_key
 api.key.datago=your_datago_api_key
-cors.allowed-origins=http://localhost:3000
+api.key.seoul-subway=your_seoul_subway_api_key
+cors.allowed-origins=http://localhost:3000,your_frontend_domain,your_backend_domain
 logging.level.root=INFO
 logging.level.com.nowwhere.nowwhere_back=INFO
 logging.file.name=/home/ubuntu/logs/nowwhere-back.log
